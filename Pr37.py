@@ -1,3 +1,4 @@
+from operator import contains
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.app import App
@@ -16,14 +17,31 @@ class CalculatorApp(App):
     def add_number(self, instance):
         if (self.formula == "0"):
             self.formula = ""
+        
+        self.containsOperation = False
 
         self.formula += str(instance.text)
         print(self.formula)
         self.update_lblOutput()
     
     def add_operation(self, instance):
-        self.formula += str(instance.text)
+        if(self.formula.__contains__(instance.text) and self.containsOperation):
+            return
+        
+        if (self.containsOperation):
+            self.formula = self.formula.replace(self.formula[-1], instance.text)
+        else:
+            self.formula += str(instance.text)
+            self.containsOperation = True
+            self.isRationalNumber = False
+            
         self.update_lblOutput()
+        
+    def add_rational_number(self, instance):
+            if(not self.isRationalNumber):
+                self.isRationalNumber = True
+                self.formula += str(instance.text)
+                self.update_lblOutput()
 
     def getResult(self, instance):
         self.lblOutput.text = str(eval(self.lblOutput.text))
@@ -35,6 +53,8 @@ class CalculatorApp(App):
 
     def build(self):
         self.formula = "0"
+        self.containsOperation = False
+        self.isRationalNumber = False
         boxLayout = BoxLayout(orientation='vertical', padding = 25)
         grid = GridLayout(cols = 4, spacing = 5)
 
@@ -58,7 +78,7 @@ class CalculatorApp(App):
 
         grid.add_widget( Button(text="C", on_press = self.clearResult) )
         grid.add_widget( Button(text="0", on_press = self.add_number) )
-        grid.add_widget( Button(text=".", on_press = self.add_number) )
+        grid.add_widget( Button(text=".", on_press = self.add_rational_number) )
         grid.add_widget( Button(text="=", on_press = self.getResult) )
 
         boxLayout.add_widget(grid)
